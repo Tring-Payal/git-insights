@@ -1,7 +1,10 @@
 // const setupApi = require('./api');
 const models = require('../../models');
 const Github = require('../lib/github');
-const GH_APP_PRIVATE_KEY = JSON.parse(`"${process.env.GH_APP_PRIVATE_KEY}"`);
+const fs = require('fs');
+const path = require('path');
+
+const GH_APP_PRIVATE_KEY = fs.readFileSync(process.env.GH_APP_PRIVATE_KEY_PATH, 'utf8');
 
 // Returns true if repo is tracked, false otherwise
 async function isRepoTracked(repoId) {
@@ -325,7 +328,7 @@ module.exports = app => {
     };
     const github = new Github(options);
 
-    for (const commit of context.payload.commits) {
+    for (const commit of context.payqload.commits) {
       let commitDetail = await github.getCommitFromRepo(
         context.payload.repository.owner.name,
         context.payload.repository.name,
@@ -349,7 +352,13 @@ module.exports = app => {
       lineDeletions: commit.stats.deletions,
       lineTotalChanges: commit.stats.total,
     }))
-
+console.log("Installation ID ***************", installationId);
+    const installationId = context.payload.installation.id;
+    await models.User.update(
+  { githubAppId: installationId },
+  { where: { githubLogin: context.payload.repository.owner.name } }
+);
+  console.log("Updated user with installation ID:",  context.payload.repository.owner.name );
     // Bulk create commits
     await models.Commit.bulkCreate(allCommits);
   });

@@ -24,6 +24,9 @@ services:
       - "3000:3000"
     volumes:
       - .:/opt/gitinsights
+    environment:
+    - BROWSER=none
+   
   api:
     image: gitinsights:v001
     command: yarn dev:api

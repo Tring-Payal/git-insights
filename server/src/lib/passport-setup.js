@@ -1,5 +1,5 @@
 const passport = require('passport');
-const { Strategy: GitHubStrategy } = require('./passport-github');
+const { Strategy: GitHubStrategy } = require('passport-github2').Strategy;
 const User = require('../../models').User;
 
 // TODO: figure out how to display errors nicely
@@ -22,19 +22,22 @@ passport.deserializeUser(async (userId, done) => {
 passport.use(new GitHubStrategy({
   clientID: process.env.GH_CLIENT_ID,
   clientSecret: process.env.GH_CLIENT_SECRET,
+  callbackURL: process.env.GH_CALLBACK_URL,
   passReqToCallback: true,
 }, async (req, accessToken, refreshToken, profile, done) => {
   try {
+    console.log('GitHub profile:********', profile);
     const existingUser = await User.findOne({
-      where: { githubId: profile.githubId }
+      where: { githubId: profile.id }
     });
 
     // If user already exists, just return the user
     if (existingUser) {
       return done(null, existingUser);
     }
+    const email = profile.emails && profile.emails[0] && profile.emails[0].value;
 
-    const existingEmailUser = await User.findOne({ where: { email: profile.email } });
+    const existingEmailUser = await User.findOne({ where: { email: email} });
 
     // This will become more meaningful as we have multiple social logins
     // but an error for now
@@ -44,8 +47,12 @@ passport.use(new GitHubStrategy({
       req.flash('errors', { msg: errMsg });
       throw(new Error(errMsg));
     } else {
-      const user = User.build({ ...profile });
+      const user = new User();
+      user.githubId = profile.id;
+      user.githubLogin =  profile.login;
       user.githubToken = accessToken;
+      user.trackingRepo= false; // Default value
+      console.log('Creating new user with GitHub profile:**', user);
       const savedUser = await user.save();
       return done(null, savedUser);
     }

@@ -6,8 +6,8 @@ const { Op } = require('sequelize');
 const createQueue = require('./queues');
 const logger = require('./logger');
 moment.tz.setDefault('America/Los_Angeles');
-
-const GH_APP_PRIVATE_KEY = JSON.parse(`"${process.env.GH_APP_PRIVATE_KEY}"`);
+const fs = require('fs');
+const path = require('path');
 
 async function buildRepoHistory(repoId, repoOwner, repoName, githubInstallationId) {
   // Process everything
@@ -21,6 +21,7 @@ async function buildRepoHistory(repoId, repoOwner, repoName, githubInstallationI
     { where: { id: repoId } }
   );
 }
+const GH_APP_PRIVATE_KEY = fs.readFileSync(process.env.GH_APP_PRIVATE_KEY_PATH, 'utf8');
 
 async function fetchAndSaveIssues(repoId, owner, repo, githubInstallationId) {
   const options = {

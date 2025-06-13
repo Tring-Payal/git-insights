@@ -6,8 +6,10 @@ const octokit = new Octokit({
 });
 const { parseGithubHistory } = require('../lib/github-tasks');
 const logger = require('../lib/logger');
-const GH_APP_PRIVATE_KEY = JSON.parse(`"${process.env.GH_APP_PRIVATE_KEY}"`);
+const fs = require('fs');
+const GH_APP_PRIVATE_KEY = fs.readFileSync(process.env.GH_APP_PRIVATE_KEY_PATH, 'utf8');
 
+const path = require('path');
 /**
  * TODO: for now we create a new token every time
  * we should save the token to user with expiration date
@@ -15,11 +17,17 @@ const GH_APP_PRIVATE_KEY = JSON.parse(`"${process.env.GH_APP_PRIVATE_KEY}"`);
 async function getUserToken(user) {
   const { App } = require("@octokit/app");
 
-  const installationId = user.githubAppId;
+  const installationId = user.githubAppId 
 
   const app = new App({ id: process.env.GH_APP_ID, privateKey: GH_APP_PRIVATE_KEY });
+  console.log("installationId", installationId);
   const installationAccessToken = await app.getInstallationAccessToken({ installationId });
+  if (!installationAccessToken) {
+    console.error('Could not get installation access token');
+    throw new Error('Could not get installation access token');
+  }
 
+  console.log("installationAccessToken", installationAccessToken);
   return installationAccessToken;
 }
 

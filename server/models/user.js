@@ -5,24 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     'User',
     {
-      /*
-        tokens: {
-          type: DataTypes.STRING,
-          defaultValue: "[]",
-          get: function() {
-            return JSON.parse(this.getDataValue('tokens'));
-          },
-          set: function(val) {
-            return this.setDataValue('tokens', JSON.stringify(val));
-          }
-        },
-
-        This doesn't work well for situations like this:
-          const user = User.build({ ...profile });
-          user.tokens.push({ kind: 'github', accessToken });
-        the getter will return an actual array and pushing to array
-        won't be saved in db.
-      */
+     
       id: {
         type: DataTypes.UUID,
         primaryKey: true,

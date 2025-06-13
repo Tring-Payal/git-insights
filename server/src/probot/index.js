@@ -1,7 +1,9 @@
 const { createProbot } = require('probot');
 const app = require('./app');
-const GH_APP_PRIVATE_KEY = JSON.parse(`"${process.env.GH_APP_PRIVATE_KEY}"`);
+const fs = require('fs');
+const GH_APP_PRIVATE_KEY = fs.readFileSync(process.env.GH_APP_PRIVATE_KEY_PATH, 'utf8');
 
+const path = require('path');
 /**
  * Probot comes bundled with Sentry. It's set by SENTRY_DSN env var
  * https://probot.github.io/docs/deployment/#error-tracking
